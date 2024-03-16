@@ -96,3 +96,7 @@ class ChessBoard(Widget):
 
                 piece.styles.background = square_color
                 self.mount(piece)
+
+    def make_move_from_san(self, san: str) -> None:
+        self.board.push_san(san)
+        self.update()
