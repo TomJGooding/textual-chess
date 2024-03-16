@@ -40,9 +40,9 @@ class ChessBoard(Widget):
 
     def __init__(
         self,
-        *,
         board: chess.Board | None = None,
         theme: board_themes.BoardTheme = board_themes.BROWN_THEME,
+        *,
         name: str | None = None,
         id: str | None = None,
         classes: str | None = None,
