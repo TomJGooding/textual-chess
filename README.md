@@ -1,6 +1,6 @@
 # textual-chess
 
-> ![WARNING]
+> [!WARNING]  
 > This project is currently a work in progress
 
 ![screenshot](assets/screenshot.png)
