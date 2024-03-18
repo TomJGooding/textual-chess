@@ -3,16 +3,7 @@ from rich.console import RenderableType
 from textual.widget import Widget
 
 from textual_chess import board_themes
-from textual_chess.pieces import (
-    Bishop,
-    King,
-    Knight,
-    Pawn,
-    Piece,
-    PieceColor,
-    Queen,
-    Rook,
-)
+from textual_chess.piece import Piece
 
 
 class UnoccupiedSquare(Widget):
@@ -61,41 +52,20 @@ class ChessBoard(Widget):
         board_str = self.board.__str__()
         ranks_strs = board_str.split("\n")
         for rank_idx, rank_str in enumerate(ranks_strs):
-            for file_idx, square_str in enumerate(rank_str.split(" ")):
+            for file_idx, square_symbol in enumerate(rank_str.split(" ")):
                 if (file_idx + (rank_idx % 2)) % 2:
                     square_color = self.theme.dark_square_color
                 else:
                     square_color = self.theme.light_square_color
 
-                if square_str == ".":
+                if square_symbol == ".":
                     square = UnoccupiedSquare()
                     square.styles.background = square_color
                     self.mount(square)
-                    continue
-
-                piece_color: PieceColor
-                if square_str.isupper():
-                    piece_color = "white"
                 else:
-                    piece_color = "black"
-
-                piece_str = square_str.lower()
-                piece: Piece
-                if piece_str == "r":
-                    piece = Rook(piece_color)
-                elif piece_str == "n":
-                    piece = Knight(piece_color)
-                elif piece_str == "b":
-                    piece = Bishop(piece_color)
-                elif piece_str == "k":
-                    piece = King(piece_color)
-                elif piece_str == "q":
-                    piece = Queen(piece_color)
-                else:
-                    piece = Pawn(piece_color)
-
-                piece.styles.background = square_color
-                self.mount(piece)
+                    piece = Piece.from_symbol(square_symbol)
+                    piece.styles.background = square_color
+                    self.mount(piece)
 
     def make_move_from_san(self, san: str) -> None:
         self.board.push_san(san)

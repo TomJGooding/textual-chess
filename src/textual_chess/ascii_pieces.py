@@ -1,4 +1,4 @@
-KING_ASCII = """\
+KING = """\
    ▄▄
   ▀██▀
  ██████
@@ -6,35 +6,35 @@ KING_ASCII = """\
 """
 
 
-QUEEN_ASCII = """\
+QUEEN = """\
    ▄▄
  █▄██▄█
   ▀██▀
  ▄████▄ \
 """
 
-ROOK_ASCII = """\
+ROOK = """\
  ▄ ▄▄ ▄
  ▀████▀
   ████
  ██████ \
 """
 
-BISHOP_ASCII = """\
+BISHOP = """\
    ▄▄
   ██▄▄
    ██
  ▄████▄ \
 """
 
-KNIGHT_ASCII = """\
+KNIGHT = """\
    ▄▄
  ▄████
  ▀▀███
  ▄████▄ \
 """
 
-PAWN_ASCII = """\
+PAWN = """\
    ▄▄
   ▄██▄
    ██
