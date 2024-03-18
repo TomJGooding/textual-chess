@@ -48,24 +48,21 @@ class ChessBoard(Widget):
 
     def update(self) -> None:
         self.remove_children()
-
-        board_str = self.board.__str__()
-        ranks_strs = board_str.split("\n")
-        for rank_idx, rank_str in enumerate(ranks_strs):
-            for file_idx, square_symbol in enumerate(rank_str.split(" ")):
-                if (file_idx + (rank_idx % 2)) % 2:
-                    square_color = self.theme.dark_square_color
-                else:
-                    square_color = self.theme.light_square_color
-
-                if square_symbol == ".":
-                    square = UnoccupiedSquare()
-                    square.styles.background = square_color
-                    self.mount(square)
-                else:
-                    piece = Piece.from_symbol(square_symbol)
-                    piece.styles.background = square_color
-                    self.mount(piece)
+        for square in chess.SQUARES_180:
+            square_color = (
+                self.theme.light_square_color
+                if (chess.square_rank(square) + chess.square_file(square)) % 2
+                else self.theme.dark_square_color
+            )
+            chess_piece = self.board.piece_at(square)
+            if chess_piece is None:
+                unoccupied_square = UnoccupiedSquare()
+                unoccupied_square.styles.background = square_color
+                self.mount(unoccupied_square)
+            else:
+                piece = Piece(chess_piece)
+                piece.styles.background = square_color
+                self.mount(piece)
 
     def make_move_from_san(self, san: str) -> None:
         self.board.push_san(san)

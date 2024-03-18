@@ -1,26 +1,14 @@
-from __future__ import annotations
-
 import chess
 from rich.console import RenderableType
 from textual.widget import Widget
 
-from textual_chess import ascii_pieces
-
-ASCII_PIECES = {
-    chess.KING: ascii_pieces.KING,
-    chess.QUEEN: ascii_pieces.QUEEN,
-    chess.ROOK: ascii_pieces.ROOK,
-    chess.BISHOP: ascii_pieces.BISHOP,
-    chess.KNIGHT: ascii_pieces.KNIGHT,
-    chess.PAWN: ascii_pieces.PAWN,
-}
+from textual_chess.ascii_pieces import ASCII_PIECES
 
 
 class Piece(Widget):
     def __init__(
         self,
-        piece_type: chess.PieceType,
-        color: chess.Color,
+        chess_piece: chess.Piece,
         *,
         name: str | None = None,
         id: str | None = None,
@@ -28,13 +16,8 @@ class Piece(Widget):
         disabled: bool = False,
     ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
-        self.piece_type = piece_type
-        self.color = color
-        self.styles.color = "white" if color else "black"
+        self.chess_piece = chess_piece
+        self.styles.color = "white" if chess_piece.color else "black"
 
     def render(self) -> RenderableType:
-        return ASCII_PIECES[self.piece_type]
-
-    @classmethod
-    def from_symbol(cls, symbol: str) -> Piece:
-        return cls(chess.PIECE_SYMBOLS.index(symbol.lower()), symbol.isupper())
+        return ASCII_PIECES[self.chess_piece.piece_type]
