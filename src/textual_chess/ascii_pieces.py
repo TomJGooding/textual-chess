@@ -40,3 +40,13 @@ PAWN = """\
    ██
  ▄████▄ \
 """
+
+ASCII_PIECES = [
+    "",
+    PAWN,
+    KNIGHT,
+    BISHOP,
+    ROOK,
+    QUEEN,
+    KING,
+]
