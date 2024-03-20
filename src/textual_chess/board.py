@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import chess
 from rich.console import RenderableType
+from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
 
@@ -32,6 +35,20 @@ class ChessBoard(Widget):
         margin: 1;
     }
     """
+
+    class GameOver(Message):
+        def __init__(
+            self,
+            chess_board: ChessBoard,
+            outcome: chess.Outcome,
+        ) -> None:
+            super().__init__()
+            self.outcome: chess.Outcome = outcome
+            self.chess_board: ChessBoard = chess_board
+
+        @property
+        def control(self) -> ChessBoard:
+            return self.chess_board
 
     def __init__(
         self,
@@ -82,6 +99,10 @@ class ChessBoard(Widget):
     def make_move_from_san(self, san: str) -> None:
         self.board.push_san(san)
         self.update()
+
+        outcome = self.board.outcome()
+        if outcome is not None:
+            self.post_message(self.GameOver(self, outcome))
 
     def flip(self) -> None:
         self.orientation = not self.orientation
