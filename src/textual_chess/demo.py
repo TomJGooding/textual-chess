@@ -34,6 +34,10 @@ class ChessApp(App):
         else:
             event.input.clear()
 
+    @on(ChessBoard.GameOver)
+    def on_chess_board_game_over(self) -> None:
+        self.query_one(ChessMoveInput).disabled = True
+
     def action_flip_board(self) -> None:
         self.query_one(ChessBoard).flip()
 
