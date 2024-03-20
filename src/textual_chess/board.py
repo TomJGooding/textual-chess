@@ -1,12 +1,13 @@
 import chess
 from rich.console import RenderableType
+from textual.reactive import var
 from textual.widget import Widget
 
 from textual_chess import board_themes
 from textual_chess.piece import Piece
 
 
-class UnoccupiedSquare(Widget):
+class EmptySquare(Widget):
     DEFAULT_CSS = """
     Unoccupied {
         width: 8;
@@ -19,6 +20,9 @@ class UnoccupiedSquare(Widget):
 
 
 class ChessBoard(Widget):
+
+    orientation: var[chess.Color] = var(chess.WHITE, init=False)
+
     DEFAULT_CSS = """
     ChessBoard {
         width: 64;
@@ -48,30 +52,39 @@ class ChessBoard(Widget):
 
     def update(self) -> None:
         self.remove_children()
+        orientation = self.orientation
         is_check = self.board.is_check()
-        for square in chess.SQUARES_180:
-            square_color = (
-                self.theme.light_square_color
-                if (chess.square_rank(square) + chess.square_file(square)) % 2
-                else self.theme.dark_square_color
-            )
-            chess_piece = self.board.piece_at(square)
-            if chess_piece is None:
-                unoccupied_square = UnoccupiedSquare()
-                unoccupied_square.styles.background = square_color
-                self.mount(unoccupied_square)
-            else:
-                piece = Piece(chess_piece)
-                if (
-                    is_check
-                    and chess_piece.piece_type == chess.KING
-                    and chess_piece.color == self.board.turn
-                ):
-                    piece.styles.background = "red"
+        for rank_index in range(7, -1, -1) if orientation else range(8):
+            for file_index in range(8) if orientation else range(7, -1, -1):
+                square = chess.square(file_index, rank_index)
+                square_color = (
+                    self.theme.light_square_color
+                    if (rank_index + file_index) % 2
+                    else self.theme.dark_square_color
+                )
+                chess_piece = self.board.piece_at(square)
+                if chess_piece is None:
+                    empty_square = EmptySquare()
+                    empty_square.styles.background = square_color
+                    self.mount(empty_square)
                 else:
-                    piece.styles.background = square_color
-                self.mount(piece)
+                    piece = Piece(chess_piece)
+                    if (
+                        is_check
+                        and chess_piece.piece_type == chess.KING
+                        and chess_piece.color == self.board.turn
+                    ):
+                        piece.styles.background = "red"
+                    else:
+                        piece.styles.background = square_color
+                    self.mount(piece)
 
     def make_move_from_san(self, san: str) -> None:
         self.board.push_san(san)
+        self.update()
+
+    def flip(self) -> None:
+        self.orientation = not self.orientation
+
+    def watch_orientation(self) -> None:
         self.update()
