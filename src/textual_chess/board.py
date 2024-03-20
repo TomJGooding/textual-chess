@@ -48,6 +48,7 @@ class ChessBoard(Widget):
 
     def update(self) -> None:
         self.remove_children()
+        is_check = self.board.is_check()
         for square in chess.SQUARES_180:
             square_color = (
                 self.theme.light_square_color
@@ -61,7 +62,14 @@ class ChessBoard(Widget):
                 self.mount(unoccupied_square)
             else:
                 piece = Piece(chess_piece)
-                piece.styles.background = square_color
+                if (
+                    is_check
+                    and chess_piece.piece_type == chess.KING
+                    and chess_piece.color == self.board.turn
+                ):
+                    piece.styles.background = "red"
+                else:
+                    piece.styles.background = square_color
                 self.mount(piece)
 
     def make_move_from_san(self, san: str) -> None:
