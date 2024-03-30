@@ -2,6 +2,7 @@ import chess
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.widgets import Footer
 
 from textual_chess.board import ChessBoard
@@ -11,7 +12,7 @@ from textual_chess.move_table import MoveTable
 
 class ChessApp(App):
     BINDINGS = [
-        Binding("ctrl+x", "flip_board", "Flip board"),
+        Binding("ctrl+x", "flip_board", "Flip Board"),
     ]
 
     CSS = """
@@ -19,17 +20,23 @@ class ChessApp(App):
         align: center middle;
     }
 
-    MoveTable {
-        dock: right;
+    Horizontal {
+        width: auto;
+        height: auto;
     }
     """
 
     def compose(self) -> ComposeResult:
-        yield ChessBoard()
+        with Horizontal():
+            yield ChessBoard()
+            yield MoveTable()
+
         yield ChessMoveInput()
 
-        yield MoveTable()
         yield Footer()
+
+    def on_mount(self) -> None:
+        self.query_one(ChessMoveInput).focus()
 
     @on(ChessMoveInput.Submitted)
     def on_chess_move_submitted(self, event: ChessMoveInput.Submitted) -> None:
