@@ -23,9 +23,6 @@ class EmptySquare(Widget):
 
 
 class ChessBoard(Widget):
-
-    orientation: var[chess.Color] = var(chess.WHITE, init=False)
-
     DEFAULT_CSS = """
     ChessBoard {
         width: 64;
@@ -35,6 +32,24 @@ class ChessBoard(Widget):
         margin: 1;
     }
     """
+
+    orientation: var[chess.Color] = var(chess.WHITE, init=False)
+
+    class MovePlayed(Message):
+        def __init__(
+            self,
+            chess_board: ChessBoard,
+            move: chess.Move,
+            san: str,
+        ) -> None:
+            super().__init__()
+            self.move: chess.Move = move
+            self.san: str = san
+            self.chess_board: ChessBoard = chess_board
+
+        @property
+        def control(self) -> ChessBoard:
+            return self.chess_board
 
     class GameOver(Message):
         def __init__(
@@ -97,8 +112,13 @@ class ChessBoard(Widget):
                     self.mount(piece)
 
     def make_move_from_san(self, san: str) -> None:
-        self.board.push_san(san)
+        move = self.board.parse_san(san)
+        # We want the 'complete' final san, for example Qxf7# where the user
+        # may have only entered Qf7.
+        final_san = self.board.san(move)
+        self.board.push(move)
         self.update()
+        self.post_message(self.MovePlayed(self, move, final_san))
 
         outcome = self.board.outcome()
         if outcome is not None:
