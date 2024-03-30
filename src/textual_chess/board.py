@@ -6,7 +6,6 @@ from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
 
-from textual_chess import board_themes
 from textual_chess.piece import Piece
 
 
@@ -30,6 +29,14 @@ class ChessBoard(Widget):
         layout: grid;
         grid-size: 8;
         margin: 1;
+    }
+
+    ChessBoard .dark-square {
+        background: #b58863;
+    }
+
+    ChessBoard .light-square {
+        background: #f0d9b5;
     }
     """
 
@@ -68,7 +75,6 @@ class ChessBoard(Widget):
     def __init__(
         self,
         board: chess.Board | None = None,
-        theme: board_themes.BoardTheme = board_themes.BROWN_THEME,
         *,
         name: str | None = None,
         id: str | None = None,
@@ -76,7 +82,6 @@ class ChessBoard(Widget):
         disabled: bool = False,
     ) -> None:
         self.board = board if board is not None else chess.Board()
-        self.theme = theme
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
 
     def on_mount(self) -> None:
@@ -89,26 +94,21 @@ class ChessBoard(Widget):
         for rank_index in range(7, -1, -1) if orientation else range(8):
             for file_index in range(8) if orientation else range(7, -1, -1):
                 square = chess.square(file_index, rank_index)
-                square_color = (
-                    self.theme.light_square_color
-                    if (rank_index + file_index) % 2
-                    else self.theme.dark_square_color
-                )
+                square_color = "light" if (rank_index + file_index) % 2 else "dark"
                 chess_piece = self.board.piece_at(square)
                 if chess_piece is None:
                     empty_square = EmptySquare()
-                    empty_square.styles.background = square_color
+                    empty_square.add_class(f"{square_color}-square")
                     self.mount(empty_square)
                 else:
                     piece = Piece(chess_piece)
+                    piece.add_class(f"{square_color}-square")
                     if (
                         is_check
                         and chess_piece.piece_type == chess.KING
                         and chess_piece.color == self.board.turn
                     ):
                         piece.styles.background = "red"
-                    else:
-                        piece.styles.background = square_color
                     self.mount(piece)
 
     def make_move_from_san(self, san: str) -> None:
