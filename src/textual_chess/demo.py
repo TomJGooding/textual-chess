@@ -6,6 +6,7 @@ from textual.widgets import Footer
 
 from textual_chess.board import ChessBoard
 from textual_chess.move_input import ChessMoveInput
+from textual_chess.move_table import MoveTable
 
 
 class ChessApp(App):
@@ -17,11 +18,17 @@ class ChessApp(App):
     Screen {
         align: center middle;
     }
+
+    MoveTable {
+        dock: right;
+    }
     """
 
     def compose(self) -> ComposeResult:
         yield ChessBoard()
         yield ChessMoveInput()
+
+        yield MoveTable()
         yield Footer()
 
     @on(ChessMoveInput.Submitted)
@@ -33,6 +40,10 @@ class ChessApp(App):
             event.input.set_class(True, "-invalid")
         else:
             event.input.clear()
+
+    @on(ChessBoard.MovePlayed)
+    def on_chess_board_move_played(self, event: ChessBoard.MovePlayed) -> None:
+        self.query_one(MoveTable).add_move(event.san)
 
     @on(ChessBoard.GameOver)
     def on_chess_board_game_over(self) -> None:
