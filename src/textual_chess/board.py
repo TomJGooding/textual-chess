@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import chess
 from rich.console import RenderableType
+from textual import events
 from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
@@ -91,17 +92,20 @@ class ChessBoard(Widget):
         self.remove_children()
         orientation = self.orientation
         is_check = self.board.is_check()
-        for rank_index in range(7, -1, -1) if orientation else range(8):
-            for file_index in range(8) if orientation else range(7, -1, -1):
-                square = chess.square(file_index, rank_index)
-                square_color = "light" if (rank_index + file_index) % 2 else "dark"
+        for rank_idx in range(7, -1, -1) if orientation else range(8):
+            for file_idx in range(8) if orientation else range(7, -1, -1):
+                square = chess.square(file_idx, rank_idx)
+                square_name = chess.square_name(square)
+                square_color = "light" if (rank_idx + file_idx) % 2 else "dark"
                 chess_piece = self.board.piece_at(square)
                 if chess_piece is None:
                     empty_square = EmptySquare()
+                    empty_square.add_class(f"square-{square_name}")
                     empty_square.add_class(f"{square_color}-square")
                     self.mount(empty_square)
                 else:
                     piece = Piece(chess_piece)
+                    piece.add_class(f"square-{square_name}")
                     piece.add_class(f"{square_color}-square")
                     if (
                         is_check
