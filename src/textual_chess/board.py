@@ -144,11 +144,32 @@ class ChessBoard(Widget):
         if outcome is not None:
             self.post_message(self.GameOver(self, outcome))
 
+    def make_move_from_uci(self, uci: str) -> None:
+        move = self.board.parse_uci(uci)
+        final_san = self.board.san(move)
+        self.board.push(move)
+        self.update()
+        self.post_message(self.MovePlayed(self, move, final_san))
+
+        outcome = self.board.outcome()
+        if outcome is not None:
+            self.post_message(self.GameOver(self, outcome))
+
     def on_click(self, event: events.Click) -> None:
         clicked, _ = self.screen.get_widget_at(
             event.screen_x,
             event.screen_y,
         )
+        assert isinstance(clicked, (Piece, EmptySquare))
+        if self.selected_piece is not None:
+            piece_square_name = self.get_square_name(self.selected_piece)
+            clicked_square_name = self.get_square_name(clicked)
+            assert self.selected_piece_legal_moves is not None
+            if clicked_square_name in self.selected_piece_legal_moves:
+                move = f"{piece_square_name}{clicked_square_name}"
+                self.make_move_from_uci(move)
+                return
+
         if not isinstance(clicked, Piece):
             self.selected_piece = None
             return
