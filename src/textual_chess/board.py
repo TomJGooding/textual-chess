@@ -131,29 +131,19 @@ class ChessBoard(Widget):
                         piece.styles.background = "red"
                     self.mount(piece)
 
+    def make_move(self, move: chess.Move) -> None:
+        san = self.board.san(move)
+        self.board.push(move)
+        self.update()
+        self.post_message(self.MovePlayed(self, move, san))
+
+        outcome = self.board.outcome()
+        if outcome is not None:
+            self.post_message(self.GameOver(self, outcome))
+
     def make_move_from_san(self, san: str) -> None:
         move = self.board.parse_san(san)
-        # We want the 'complete' final san, for example Qxf7# where the user
-        # may have only entered Qf7.
-        final_san = self.board.san(move)
-        self.board.push(move)
-        self.update()
-        self.post_message(self.MovePlayed(self, move, final_san))
-
-        outcome = self.board.outcome()
-        if outcome is not None:
-            self.post_message(self.GameOver(self, outcome))
-
-    def make_move_from_uci(self, uci: str) -> None:
-        move = self.board.parse_uci(uci)
-        final_san = self.board.san(move)
-        self.board.push(move)
-        self.update()
-        self.post_message(self.MovePlayed(self, move, final_san))
-
-        outcome = self.board.outcome()
-        if outcome is not None:
-            self.post_message(self.GameOver(self, outcome))
+        self.make_move(move)
 
     def on_click(self, event: events.Click) -> None:
         clicked, _ = self.screen.get_widget_at(
@@ -166,8 +156,11 @@ class ChessBoard(Widget):
             clicked_square_name = self.get_square_name(clicked)
             assert self.selected_piece_legal_moves is not None
             if clicked_square_name in self.selected_piece_legal_moves:
-                move = f"{piece_square_name}{clicked_square_name}"
-                self.make_move_from_uci(move)
+                move = chess.Move(
+                    from_square=chess.parse_square(piece_square_name),
+                    to_square=chess.parse_square(clicked_square_name),
+                )
+                self.make_move(move)
                 return
 
         if not isinstance(clicked, Piece):
