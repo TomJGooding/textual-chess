@@ -40,6 +40,10 @@ class ChessBoard(Widget):
         background: #f0d9b5;
     }
 
+    ChessBoard .hovered-legal-move-square {
+        background: yellow;
+    }
+
     ChessBoard .selected-piece {
         background: green;
     }
@@ -47,6 +51,10 @@ class ChessBoard(Widget):
 
     orientation: var[chess.Color] = var(chess.WHITE, init=False)
     selected_piece: var[Piece | None] = var[Piece | None](None)
+    selected_piece_legal_moves: list[str] | None = None
+    hovered_legal_move_square: var[Piece | EmptySquare | None] = var[
+        Piece | EmptySquare | None
+    ](None)
 
     class MovePlayed(Message):
         def __init__(
@@ -96,6 +104,9 @@ class ChessBoard(Widget):
     def update(self) -> None:
         self.remove_children()
         orientation = self.orientation
+        self.selected_piece = None
+        self.hovered_legal_move_square = None
+        self.selected_piece_legal_moves = None
         is_check = self.board.is_check()
         for rank_idx in range(7, -1, -1) if orientation else range(8):
             for file_idx in range(8) if orientation else range(7, -1, -1):
@@ -149,6 +160,14 @@ class ChessBoard(Widget):
         else:
             self.selected_piece = None
 
+    def get_square_name(self, square: Piece | EmptySquare) -> str:
+        square_name: str = ""
+        for class_ in square.classes:
+            if class_.startswith("square-"):
+                square_name = class_[7:]
+                break
+        return square_name
+
     def watch_selected_piece(
         self,
         old_selected: Piece | None,
@@ -158,6 +177,38 @@ class ChessBoard(Widget):
             old_selected.set_class(False, "selected-piece")
         if new_selected is not None:
             new_selected.set_class(True, "selected-piece")
+            square_name = self.get_square_name(new_selected)
+            self.selected_piece_legal_moves = [
+                chess.square_name(move.to_square)
+                for move in self.board.legal_moves
+                if move.from_square == chess.parse_square(square_name)
+            ]
+        else:
+            self.selected_piece_legal_moves = None
+
+    def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self.selected_piece_legal_moves is None:
+            return
+        hovered, _ = self.screen.get_widget_at(
+            event.screen_x,
+            event.screen_y,
+        )
+        assert isinstance(hovered, (Piece, EmptySquare))
+        square_name = self.get_square_name(hovered)
+        if square_name in self.selected_piece_legal_moves:
+            self.hovered_legal_move_square = hovered
+        else:
+            self.hovered_legal_move_square = None
+
+    def watch_hovered_legal_move_square(
+        self,
+        old_hovered: Piece | EmptySquare | None,
+        new_hovered: Piece | EmptySquare | None,
+    ) -> None:
+        if old_hovered is not None:
+            old_hovered.set_class(False, "hovered-legal-move-square")
+        if new_hovered is not None:
+            new_hovered.set_class(True, "hovered-legal-move-square")
 
     def flip(self) -> None:
         self.orientation = not self.orientation
