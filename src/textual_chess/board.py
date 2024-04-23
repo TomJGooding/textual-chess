@@ -39,9 +39,14 @@ class ChessBoard(Widget):
     ChessBoard .light-square {
         background: #f0d9b5;
     }
+
+    ChessBoard .selected-piece {
+        background: green;
+    }
     """
 
     orientation: var[chess.Color] = var(chess.WHITE, init=False)
+    selected_piece: var[Piece | None] = var[Piece | None](None)
 
     class MovePlayed(Message):
         def __init__(
@@ -127,6 +132,32 @@ class ChessBoard(Widget):
         outcome = self.board.outcome()
         if outcome is not None:
             self.post_message(self.GameOver(self, outcome))
+
+    def on_click(self, event: events.Click) -> None:
+        clicked, _ = self.screen.get_widget_at(
+            event.screen_x,
+            event.screen_y,
+        )
+        if not isinstance(clicked, Piece):
+            self.selected_piece = None
+            return
+        if (
+            clicked.chess_piece.color == self.board.turn
+            and clicked != self.selected_piece
+        ):
+            self.selected_piece = clicked
+        else:
+            self.selected_piece = None
+
+    def watch_selected_piece(
+        self,
+        old_selected: Piece | None,
+        new_selected: Piece | None,
+    ) -> None:
+        if old_selected is not None:
+            old_selected.set_class(False, "selected-piece")
+        if new_selected is not None:
+            new_selected.set_class(True, "selected-piece")
 
     def flip(self) -> None:
         self.orientation = not self.orientation
