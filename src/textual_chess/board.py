@@ -40,12 +40,17 @@ class ChessBoard(Widget):
         background: #f0d9b5;
     }
 
-    ChessBoard .hovered-legal-move-square {
-        background: yellow;
+    ChessBoard .move-destination {
+        background: #87af87;
     }
 
     ChessBoard .selected-piece {
-        background: green;
+        background: #577c57;
+
+    }
+
+    ChessBoard .check {
+        background: #e70000;
     }
     """
 
@@ -128,7 +133,7 @@ class ChessBoard(Widget):
                         and chess_piece.piece_type == chess.KING
                         and chess_piece.color == self.board.turn
                     ):
-                        piece.styles.background = "red"
+                        piece.set_class(True, "check")
                     self.mount(piece)
 
     def make_move(self, move: chess.Move) -> None:
@@ -220,9 +225,9 @@ class ChessBoard(Widget):
         new_hovered: Piece | EmptySquare | None,
     ) -> None:
         if old_hovered is not None:
-            old_hovered.set_class(False, "hovered-legal-move-square")
+            old_hovered.set_class(False, "move-destination")
         if new_hovered is not None:
-            new_hovered.set_class(True, "hovered-legal-move-square")
+            new_hovered.set_class(True, "move-destination")
 
     def flip(self) -> None:
         self.orientation = not self.orientation
