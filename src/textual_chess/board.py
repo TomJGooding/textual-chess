@@ -12,7 +12,7 @@ from textual_chess.piece import Piece
 
 class EmptySquare(Widget):
     DEFAULT_CSS = """
-    Unoccupied {
+    EmptySquare {
         width: 8;
         height: 4;
     }
@@ -46,7 +46,6 @@ class ChessBoard(Widget):
 
     ChessBoard .selected-piece {
         background: #577c57;
-
     }
 
     ChessBoard .check {
@@ -57,7 +56,7 @@ class ChessBoard(Widget):
     orientation: var[chess.Color] = var(chess.WHITE, init=False)
     selected_piece: var[Piece | None] = var[Piece | None](None)
     selected_piece_legal_moves: list[str] | None = None
-    hovered_legal_move_square: var[Piece | EmptySquare | None] = var[
+    hovered_move_destination: var[Piece | EmptySquare | None] = var[
         Piece | EmptySquare | None
     ](None)
 
@@ -110,7 +109,7 @@ class ChessBoard(Widget):
         self.remove_children()
         orientation = self.orientation
         self.selected_piece = None
-        self.hovered_legal_move_square = None
+        self.hovered_move_destination = None
         self.selected_piece_legal_moves = None
         is_check = self.board.is_check()
         for rank_idx in range(7, -1, -1) if orientation else range(8):
@@ -166,18 +165,17 @@ class ChessBoard(Widget):
                     to_square=chess.parse_square(clicked_square_name),
                 )
                 self.make_move(move)
-                return
-
-        if not isinstance(clicked, Piece):
-            self.selected_piece = None
-            return
-        if (
-            clicked.chess_piece.color == self.board.turn
-            and clicked != self.selected_piece
-        ):
-            self.selected_piece = clicked
         else:
-            self.selected_piece = None
+            if not isinstance(clicked, Piece):
+                self.selected_piece = None
+                return
+            if (
+                clicked.chess_piece.color == self.board.turn
+                and clicked != self.selected_piece
+            ):
+                self.selected_piece = clicked
+            else:
+                self.selected_piece = None
 
     def get_square_name(self, square: Piece | EmptySquare) -> str:
         square_name: str = ""
@@ -215,11 +213,11 @@ class ChessBoard(Widget):
         assert isinstance(hovered, (Piece, EmptySquare))
         square_name = self.get_square_name(hovered)
         if square_name in self.selected_piece_legal_moves:
-            self.hovered_legal_move_square = hovered
+            self.hovered_move_destination = hovered
         else:
-            self.hovered_legal_move_square = None
+            self.hovered_move_destination = None
 
-    def watch_hovered_legal_move_square(
+    def watch_hovered_move_destination(
         self,
         old_hovered: Piece | EmptySquare | None,
         new_hovered: Piece | EmptySquare | None,
