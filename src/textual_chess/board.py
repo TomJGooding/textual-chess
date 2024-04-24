@@ -165,17 +165,17 @@ class ChessBoard(Widget):
                     to_square=chess.parse_square(clicked_square_name),
                 )
                 self.make_move(move)
-        else:
-            if not isinstance(clicked, Piece):
-                self.selected_piece = None
                 return
-            if (
-                clicked.chess_piece.color == self.board.turn
-                and clicked != self.selected_piece
-            ):
-                self.selected_piece = clicked
-            else:
-                self.selected_piece = None
+        if not isinstance(clicked, Piece):
+            self.selected_piece = None
+            return
+        if (
+            clicked.chess_piece.color == self.board.turn
+            and clicked != self.selected_piece
+        ):
+            self.selected_piece = clicked
+        else:
+            self.selected_piece = None
 
     def get_square_name(self, square: Piece | EmptySquare) -> str:
         square_name: str = ""
