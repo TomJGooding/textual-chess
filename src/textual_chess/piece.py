@@ -6,6 +6,13 @@ from textual_chess.ascii_pieces import ASCII_PIECES
 
 
 class Piece(Widget):
+    DEFAULT_CSS = """
+    Piece {
+        width: 8;
+        height: 4;
+    }
+    """
+
     def __init__(
         self,
         chess_piece: chess.Piece,
