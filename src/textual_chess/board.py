@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import chess
 from rich.console import RenderableType
-from textual import events
+from textual import events, work
 from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
 
 from textual_chess.piece import Piece
+from textual_chess.promotion import PromotionModalScreen
 
 
 class EmptySquare(Widget):
@@ -149,20 +150,38 @@ class ChessBoard(Widget):
         move = self.board.parse_san(san)
         self.make_move(move)
 
-    def on_click(self, event: events.Click) -> None:
-        clicked, _ = self.screen.get_widget_at(
-            event.screen_x,
-            event.screen_y,
-        )
+    @work
+    async def on_click(self, event: events.Click) -> None:
+        clicked, _ = self.screen.get_widget_at(event.screen_x, event.screen_y)
         assert isinstance(clicked, (Piece, EmptySquare))
         if self.selected_piece is not None:
             piece_square_name = self.get_square_name(self.selected_piece)
             clicked_square_name = self.get_square_name(clicked)
             assert self.selected_piece_legal_moves is not None
+
             if clicked_square_name in self.selected_piece_legal_moves:
+                promotion: chess.PieceType | None = None
+                if (
+                    self.selected_piece.chess_piece.piece_type == chess.PAWN
+                    and clicked_square_name[1] in ("1", "8")
+                ):
+                    promotion = await self.app.push_screen_wait(
+                        PromotionModalScreen(
+                            piece_color=self.board.turn,
+                            board_orientation=self.orientation,
+                            square_offset=clicked.region.offset,
+                        )
+                    )
+                    if promotion is None:
+                        self.selected_piece = None
+                        self.hovered_move_destination = None
+                        self.selected_piece_legal_moves = None
+                        return
+
                 move = chess.Move(
                     from_square=chess.parse_square(piece_square_name),
                     to_square=chess.parse_square(clicked_square_name),
+                    promotion=promotion,
                 )
                 self.make_move(move)
                 return
