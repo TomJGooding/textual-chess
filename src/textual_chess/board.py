@@ -23,7 +23,7 @@ class EmptySquare(Widget):
         return ""
 
 
-class ChessBoard(Widget):
+class ChessBoard(Widget, can_focus=True):
     DEFAULT_CSS = """
     ChessBoard {
         width: 64;

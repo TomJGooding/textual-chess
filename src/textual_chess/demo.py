@@ -35,9 +35,6 @@ class ChessApp(App):
 
         yield Footer()
 
-    def on_mount(self) -> None:
-        self.query_one(ChessMoveInput).focus()
-
     @on(ChessMoveInput.Submitted)
     def on_chess_move_submitted(self, event: ChessMoveInput.Submitted) -> None:
         board = self.query_one(ChessBoard)
