@@ -10,8 +10,8 @@ class MoveTable(Widget):
     DEFAULT_CSS = """
     MoveTable {
         height: 32;
-        width: 23;
-        min-width: 23;
+        width: 25;
+        min-width: 25;
         background: $panel;
         margin: 1;
     }
